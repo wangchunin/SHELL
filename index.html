@@ -1,4 +1,4 @@
-// index.html
+<!-- index.html -->
 
 <!DOCTYPE html>
 <html>
@@ -13,16 +13,20 @@
       margin-bottom: 10px;
     }
   </style>
+</head>
+<body>
+  <div id="container"></div>
+
   <script>
     const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
-    const accessToken = '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';
+    const apiKey = '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';
 
     async function fetchDirectory(path) {
       const response = await fetch(apiUrl + path, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
           'User-Agent': 'Mozilla/5.0 (compatible; Cloudflare-Worker/1.0)',
-          'Accept': 'application/vnd.github.v3+json'
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': `Bearer ${apiKey}`
         }
       });
 
@@ -51,10 +55,10 @@
 
         const link = document.createElement('a');
         link.textContent = 'Go Back';
-        link.href = '..';
+        link.href = path.substring(0, path.lastIndexOf('/'));
         link.addEventListener('click', async (event) => {
           event.preventDefault();
-          await showDirectory(getParentPath(path));
+          await showDirectory(path.substring(0, path.lastIndexOf('/')));
         });
         li.appendChild(link);
       }
@@ -95,16 +99,7 @@
       }
     }
 
-    function getParentPath(path) {
-      const parts = path.split('/');
-      parts.pop();
-      return parts.join('/') || '/';
-    }
-
     showDirectory('/');
   </script>
-</head>
-<body>
-  <div id="container"></div>
 </body>
 </html>
