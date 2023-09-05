@@ -1,4 +1,4 @@
-// index.html
+<!-- index.html -->
 
 <!DOCTYPE html>
 <html>
@@ -19,6 +19,7 @@
 
   <script>
     const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
+    const pathStack = [];
 
     async function fetchDirectory(path) {
       const response = await fetch(apiUrl + path, {
@@ -47,14 +48,13 @@
       const ul = document.createElement('ul');
       container.appendChild(ul);
 
-      // 添加返回上一级目录的链接
       if (path !== '/') {
         const parentLink = document.createElement('a');
         parentLink.textContent = '↵ Parent Directory';
-        parentLink.href = path.substring(0, path.lastIndexOf('/'));
-        parentLink.addEventListener('click', async (event) => {
+        parentLink.href = '#';
+        parentLink.addEventListener('click', (event) => {
           event.preventDefault();
-          await showDirectory(parentLink.href);
+          goBack();
         });
         const parentLi = document.createElement('li');
         parentLi.appendChild(parentLink);
@@ -72,7 +72,7 @@
         if (isDirectory) {
           const link = document.createElement('a');
           link.textContent = itemName;
-          link.href = itemPath;
+          link.href = '#';
           link.addEventListener('click', async (event) => {
             event.preventDefault();
             await showDirectory(itemPath);
@@ -92,8 +92,17 @@
       try {
         const data = await fetchDirectory(path);
         generateDirectoryPage(data, path);
+        pathStack.push(path);
       } catch (error) {
         console.error(error);
+      }
+    }
+
+    function goBack() {
+      if (pathStack.length > 1) {
+        pathStack.pop();
+        const previousPath = pathStack[pathStack.length - 1];
+        showDirectory(previousPath);
       }
     }
 
