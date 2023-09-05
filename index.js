@@ -1,66 +1,46 @@
-// 递归遍历目录结构并生成文件列表
-function generateFileList(directory) {
-  const files = fs.readdirSync(directory);
-  const fileList = [];
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
 
-  files.forEach((file) => {
-    const filePath = path.join(directory, file);
-    const stats = fs.statSync(filePath);
+async function handleRequest(request) {
+  const url = new URL(request.url)
+  const path = url.pathname
 
-    if (stats.isFile()) {
-      fileList.push(filePath);
-    } else if (stats.isDirectory()) {
-      const subDirectoryFiles = generateFileList(filePath);
-      fileList.push(...subDirectoryFiles);
-    }
-  });
+  // 如果请求的路径不是根目录下的文件，则返回默认的 Cloudflare Pages 网页
+  if (path !== '/') {
+    return fetch(request)
+  }
 
-  return fileList;
-}
+  const response = new Response()
+  const headers = { 'Content-Type': 'text/html' }
+  const files = await getFiles()
 
-addEventListener('fetch', (event) => {
-  const { request } = event;
-  const { pathname } = new URL(request.url);
-
-  if (pathname === '/') {
-    // 生成文件列表
-    const files = generateFileList(__dirname);
-
-    // 生成目录列表的 HTML
-    const html = `
-      <!DOCTYPE html>
-      <html>
+  // 构建文件列表的 HTML
+  const fileList = files.map(file => `<li><a href="/${file}">${file}</a></li>`).join('')
+  const html = `
+    <html>
       <head>
         <title>文件列表</title>
-        <style>
-          pre {
-            white-space: pre-wrap;
-            font-family: monospace;
-          }
-        </style>
       </head>
       <body>
         <h1>文件列表</h1>
-        <ul>
-          ${files.map((file) => `<li><a href="${file}">${file}</a></li>`).join('\n')}
-        </ul>
+        <ul>${fileList}</ul>
       </body>
-      </html>
-    `;
+    </html>
+  `
 
-    event.respondWith(new Response(html, { headers: { 'Content-Type': 'text/html' } }));
-  } else {
-    // 处理文件请求
-    const filePath = path.join(__dirname, pathname.substr(1));
+  response.headers.set('Content-Type', 'text/html')
+  response.body = html
 
-    fs.readFile(filePath, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        event.respondWith(new Response('Internal Server Error', { status: 500 }));
-        return;
-      }
+  return response
+}
 
-      event.respondWith(new Response(data, { headers: { 'Content-Type': 'text/plain' } }));
-    });
-  }
-});
+async function getFiles() {
+  // 使用 GitHub API 获取仓库根目录下的文件列表
+  const response = await fetch('https://api.github.com/repos/wangchunin/SHELL/contents')
+  const data = await response.json()
+
+  // 过滤出文件，并返回文件名列表
+  const files = data.filter(item => item.type === 'file').map(item => item.name)
+  return files
+}
