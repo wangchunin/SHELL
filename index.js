@@ -25,7 +25,7 @@ const html = `
   <body>
     <h1>文件列表</h1>
     <ul>
-      ${files.map((file) => `<li><a href="${file}">${file}</a></li>`).join('\n')}
+      ${files.map((file) => `<li><a href="/${file}">${file}</a></li>`).join('\n')}
     </ul>
   </body>
   </html>
@@ -40,19 +40,38 @@ fs.writeFile('index.html', html, (err) => {
   console.log('目录列表已生成');
 });
 
-// 为每个文件创建对应的路由
-files.forEach((file) => {
-  // 创建路由处理函数
-  const handleFile = async (request) => {
-    const data = await fs.promises.readFile(path.join(rootDirectory, file), 'utf-8');
+// 处理文件请求
+addEventListener('fetch', (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
 
-    return new Response(data, {
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    });
-  };
-
-  // 注册路由
-  addRoute(`/${file}`, handleFile);
+  if (url.pathname !== '/' && files.includes(url.pathname.slice(1))) {
+    event.respondWith(handleFile(request));
+  } else {
+    event.respondWith(handleDirectoryListing());
+  }
 });
+
+// 处理文件请求
+async function handleFile(request) {
+  const filePath = path.join(rootDirectory, request.url.slice(1));
+  const data = await fs.promises.readFile(filePath, 'utf-8');
+
+  return new Response(data, {
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+  });
+}
+
+// 处理目录列表请求
+async function handleDirectoryListing() {
+  const indexHtmlPath = path.join(rootDirectory, 'index.html');
+  const data = await fs.promises.readFile(indexHtmlPath, 'utf-8');
+
+  return new Response(data, {
+    headers: {
+      'Content-Type': 'text/html',
+    },
+  });
+}
