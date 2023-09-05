@@ -19,18 +19,14 @@
 
   <script>
     const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
-    console.log(JSON.stringify(window._env));
-    console.log(JSON.stringify(window.env));
+    const apiKey = '__API_KEY__'; // Replace with the actual environment variable name
 
-    const apiKey = window.env.API_KEY;
     async function fetchDirectory(path) {
-      
-
       const response = await fetch(apiUrl + path, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; Cloudflare-Worker/1.0)',
           'Accept': 'application/vnd.github.v3+json',
-           'Authorization': `Bearer ${apiKey}` // 添加授权头
+          'Authorization': `Bearer ${apiKey}`
         }
       });
 
@@ -106,12 +102,6 @@
       const parts = path.split('/');
       parts.pop();
       return parts.join('/');
-    }
-
-    async function getPageEnvironmentVariable(variableName) {
-      const response = await fetch('/__/env/' + variableName);
-      const data = await response.json();
-      return data[variableName];
     }
 
     showDirectory('/');
