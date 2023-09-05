@@ -19,7 +19,7 @@
 
   <script>
     const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
-    const apiKey = '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';
+    const apiKey = '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'; // 替换为你的 GitHub API Key
 
     async function fetchDirectory(path) {
       const response = await fetch(apiUrl + path, {
@@ -51,16 +51,15 @@
 
       if (path !== '/') {
         const li = document.createElement('li');
-        ul.appendChild(li);
-
         const link = document.createElement('a');
-        link.textContent = 'Go Back';
-        link.href = path.substring(0, path.lastIndexOf('/'));
+        link.textContent = 'Go Up';
+        link.href = '..';
         link.addEventListener('click', async (event) => {
           event.preventDefault();
-          await showDirectory(path.substring(0, path.lastIndexOf('/')));
+          await showDirectory(getParentPath(path));
         });
         li.appendChild(link);
+        ul.appendChild(li);
       }
 
       data.forEach(item => {
@@ -97,6 +96,12 @@
       } catch (error) {
         console.error(error);
       }
+    }
+
+    function getParentPath(path) {
+      const parts = path.split('/');
+      parts.pop();
+      return parts.join('/');
     }
 
     showDirectory('/');
