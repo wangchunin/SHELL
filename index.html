@@ -13,83 +13,77 @@
       margin-bottom: 10px;
     }
   </style>
+</head>
+<body>
+  <div id="container"></div>
+
   <script>
-    function showDirectory(path) {
-      const apiUrl = `https://api.github.com/repos/wangchunin/SHELL/contents${path}`;
+    const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
 
-      fetch(apiUrl)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Failed to fetch directory');
-          }
-          return response.json();
-        })
-        .then(data => {
-          const container = document.getElementById('container');
-          container.innerHTML = '';
+    async function fetchDirectory(path) {
+      const response = await fetch(apiUrl + path, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Cloudflare-Worker/1.0)',
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
 
-          const title = document.createElement('h1');
-          title.textContent = 'Directory';
-          container.appendChild(title);
+      if (!response.ok) {
+        throw new Error('Failed to fetch directory');
+      }
 
-          const ul = document.createElement('ul');
-          container.appendChild(ul);
-
-          if (path !== '/') {
-            const li = document.createElement('li');
-            ul.appendChild(li);
-
-            const link = document.createElement('a');
-            link.textContent = 'Go Back';
-            link.href = '..';
-            link.addEventListener('click', event => {
-              event.preventDefault();
-              showDirectory(getParentPath(path));
-            });
-            li.appendChild(link);
-          }
-
-          data.forEach(item => {
-            const li = document.createElement('li');
-            ul.appendChild(li);
-
-            const itemName = item.name;
-            const itemPath = item.path;
-            const isDirectory = item.type === 'dir';
-
-            if (isDirectory) {
-              const link = document.createElement('a');
-              link.textContent = itemName;
-              link.href = itemPath;
-              link.addEventListener('click', event => {
-                event.preventDefault();
-                showDirectory(itemPath);
-              });
-              li.appendChild(link);
-            } else {
-              const link = document.createElement('a');
-              link.textContent = itemName;
-              link.href = itemPath;
-              link.target = '_blank';
-              li.appendChild(link);
-            }
-          });
-        })
-        .catch(error => {
-          console.error(error);
-        });
+      const data = await response.json();
+      return data;
     }
 
-    function getParentPath(path) {
-      const parts = path.split('/');
-      parts.pop();
-      return parts.join('/') || '/';
+    function generateDirectoryPage(data, path) {
+      const container = document.getElementById('container');
+      container.innerHTML = '';
+
+      const title = document.createElement('h1');
+      title.textContent = 'Directory';
+      container.appendChild(title);
+
+      const ul = document.createElement('ul');
+      container.appendChild(ul);
+
+      data.forEach(item => {
+        const li = document.createElement('li');
+        ul.appendChild(li);
+
+        const itemName = item.name;
+        const itemPath = item.path;
+        const isDirectory = item.type === 'dir';
+
+        if (isDirectory) {
+          const link = document.createElement('a');
+          link.textContent = itemName;
+          link.href = itemPath;
+          link.addEventListener('click', async (event) => {
+            event.preventDefault();
+            await showDirectory(itemPath);
+          });
+          li.appendChild(link);
+        } else {
+          const link = document.createElement('a');
+          link.textContent = itemName;
+          link.href = itemPath;
+          link.target = '_blank';
+          li.appendChild(link);
+        }
+      });
+    }
+
+    async function showDirectory(path) {
+      try {
+        const data = await fetchDirectory(path);
+        generateDirectoryPage(data, path);
+      } catch (error) {
+        console.error(error);
+      }
     }
 
     showDirectory('/');
   </script>
-</head>
-<body>
-  <div id="container"></div>
 </body>
 </html>
