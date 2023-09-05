@@ -1,3 +1,5 @@
+<!-- index.html -->
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,9 +11,6 @@
     }
     li {
       margin-bottom: 10px;
-    }
-    pre {
-      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -66,29 +65,13 @@
           });
           li.appendChild(link);
         } else {
-          if (itemPath.endsWith('.sh')) {
-            const fileContent = await fetchFileContent(itemPath);
-            const pre = document.createElement('pre');
-            pre.textContent = fileContent;
-            li.appendChild(pre);
-          } else {
-            const link = document.createElement('a');
-            link.textContent = itemName;
-            link.href = itemPath;
-            link.target = '_blank';
-            li.appendChild(link);
-          }
+          const link = document.createElement('a');
+          link.textContent = itemName;
+          link.href = itemPath;
+          link.target = '_blank';
+          li.appendChild(link);
         }
       });
-    }
-
-    async function fetchFileContent(filePath) {
-      const response = await fetch(filePath);
-      if (!response.ok) {
-        throw new Error('Failed to fetch file content');
-      }
-      const content = await response.text();
-      return content;
     }
 
     async function showDirectory(path) {
