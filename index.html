@@ -13,14 +13,9 @@
       margin-bottom: 10px;
     }
   </style>
-</head>
-<body>
-  <div id="container"></div>
-
   <script>
-    const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
-
     async function fetchDirectory(path) {
+      const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
       const response = await fetch(apiUrl + path, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; Cloudflare-Worker/1.0)',
@@ -69,6 +64,25 @@
           link.textContent = itemName;
           link.href = itemPath;
           link.target = '_blank';
+
+          // 判断文件扩展名是否为 .sh
+          const extension = itemName.split('.').pop();
+          if (extension === 'sh') {
+            link.setAttribute('download', '');
+            link.addEventListener('click', async (event) => {
+              event.preventDefault();
+              const response = await fetch(itemPath);
+              const content = await response.text();
+              const blob = new Blob([content], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = itemName;
+              a.click();
+              URL.revokeObjectURL(url);
+            });
+          }
+
           li.appendChild(link);
         }
       });
@@ -85,5 +99,8 @@
 
     showDirectory('/');
   </script>
+</head>
+<body>
+  <div id="container"></div>
 </body>
 </html>
