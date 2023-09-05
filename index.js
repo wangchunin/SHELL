@@ -1,12 +1,30 @@
 const fs = require('fs');
 const path = require('path');
-const express = require('express');
 
-const app = express();
 const rootDirectory = __dirname; // 根目录路径
 
-// 读取根目录下的文件列表
-const files = fs.readdirSync(rootDirectory);
+// 递归遍历目录结构并生成文件列表
+function generateFileList(directory) {
+  const files = fs.readdirSync(directory);
+  const fileList = [];
+
+  files.forEach((file) => {
+    const filePath = path.join(directory, file);
+    const stats = fs.statSync(filePath);
+
+    if (stats.isFile()) {
+      fileList.push(filePath);
+    } else if (stats.isDirectory()) {
+      const subDirectoryFiles = generateFileList(filePath);
+      fileList.push(...subDirectoryFiles);
+    }
+  });
+
+  return fileList;
+}
+
+// 生成文件列表
+const files = generateFileList(rootDirectory);
 
 // 生成目录列表的 HTML
 const html = `
@@ -15,19 +33,16 @@ const html = `
   <head>
     <title>文件列表</title>
     <style>
-      ul {
-        list-style-type: none;
-      }
-      li::before {
-        content: "📄";
-        margin-right: 0.5em;
+      pre {
+        white-space: pre-wrap;
+        font-family: monospace;
       }
     </style>
   </head>
   <body>
     <h1>文件列表</h1>
     <ul>
-      ${files.map((file) => `<li><a href="/${file}">${file}</a></li>`).join('\n')}
+      ${files.map((file) => `<li><a href="${file}">${file}</a></li>`).join('\n')}
     </ul>
   </body>
   </html>
@@ -42,28 +57,30 @@ fs.writeFile('index.html', html, (err) => {
   console.log('目录列表已生成');
 });
 
-// 处理文件请求
-const handleFile = (file) => {
-  return (request, response) => {
-    const filePath = path.join(rootDirectory, file);
-    const data = fs.readFileSync(filePath, 'utf-8');
-
-    response.setHeader('Content-Type', 'text/plain');
-    response.end(data);
-  };
-};
-
-// 注册路由
-app.get('/', (request, response) => {
-  response.sendFile(path.join(__dirname, 'index.html'));
-});
-
+// 为每个文件创建对应的路由
 files.forEach((file) => {
-  app.get(`/${file}`, handleFile(file));
-});
+  // 创建路由处理函数
+  const handleFile = (request, response) => {
+    fs.readFile(file, 'utf-8', (err, data) => {
+      if (err) {
+        console.error(err);
+        response.statusCode = 500;
+        response.end('Internal Server Error');
+        return;
+      }
 
-// 启动服务器
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+      response.setHeader('Content-Type', 'text/plain');
+      response.end(data);
+    });
+  };
+
+  // 注册路由
+  addEventListener('fetch', (event) => {
+    const request = event.request;
+    const url = new URL(request.url);
+
+    if (url.pathname === `/${file}`) {
+      event.respondWith(new Response(handleFile(request, response)));
+    }
+  });
 });
