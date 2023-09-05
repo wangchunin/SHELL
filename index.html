@@ -19,14 +19,14 @@
 
   <script>
     const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
-    const apiKey = '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'; // 替换为你的 GitHub API Key
+    const apiKey = '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'; // 替换为你的 GitHub API Key
 
     async function fetchDirectory(path) {
       const response = await fetch(apiUrl + path, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; Cloudflare-Worker/1.0)',
           'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `token ${apiKey}`
+          'Authorization': `Bearer ${apiKey}`
         }
       });
 
