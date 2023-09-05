@@ -19,7 +19,6 @@
 
   <script>
     const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
-    const pathStack = [];
 
     async function fetchDirectory(path) {
       const response = await fetch(apiUrl + path, {
@@ -52,9 +51,10 @@
         const parentLink = document.createElement('a');
         parentLink.textContent = '↵ Parent Directory';
         parentLink.href = '#';
-        parentLink.addEventListener('click', (event) => {
+        parentLink.addEventListener('click', async (event) => {
           event.preventDefault();
-          goBack();
+          const parentPath = path.substring(0, path.lastIndexOf('/'));
+          await showDirectory(parentPath);
         });
         const parentLi = document.createElement('li');
         parentLi.appendChild(parentLink);
@@ -92,17 +92,8 @@
       try {
         const data = await fetchDirectory(path);
         generateDirectoryPage(data, path);
-        pathStack.push(path);
       } catch (error) {
         console.error(error);
-      }
-    }
-
-    function goBack() {
-      if (pathStack.length > 1) {
-        pathStack.pop();
-        const previousPath = pathStack[pathStack.length - 1];
-        showDirectory(previousPath);
       }
     }
 
