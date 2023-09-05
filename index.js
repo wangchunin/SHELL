@@ -3,28 +3,11 @@ const path = require('path');
 
 const rootDirectory = __dirname; // 根目录路径
 
-// 递归遍历目录结构并生成文件列表
-function generateFileList(directory) {
-  const files = fs.readdirSync(directory);
-  const fileList = [];
-
-  files.forEach((file) => {
-    const filePath = path.join(directory, file);
-    const stats = fs.statSync(filePath);
-
-    if (stats.isFile()) {
-      fileList.push(filePath);
-    } else if (stats.isDirectory()) {
-      const subDirectoryFiles = generateFileList(filePath);
-      fileList.push(...subDirectoryFiles);
-    }
-  });
-
-  return fileList;
-}
-
 // 生成文件列表
-const files = generateFileList(rootDirectory);
+const files = fs.readdirSync(rootDirectory).filter((file) => {
+  const filePath = path.join(rootDirectory, file);
+  return fs.statSync(filePath).isFile();
+});
 
 // 生成目录列表的 HTML
 const html = `
@@ -61,7 +44,7 @@ fs.writeFile('index.html', html, (err) => {
 files.forEach((file) => {
   // 创建路由处理函数
   const handleFile = async (request) => {
-    const data = await fs.promises.readFile(file, 'utf-8');
+    const data = await fs.promises.readFile(path.join(rootDirectory, file), 'utf-8');
 
     return new Response(data, {
       headers: {
