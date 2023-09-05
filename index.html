@@ -19,15 +19,15 @@
 
   <script>
     const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
-
+    const apiKey = process.env.API_KEY;
     async function fetchDirectory(path) {
-      const apiKey = await getPageEnvironmentVariable('API_KEY'); // 从页面环境变量中获取 API Key
+      
 
       const response = await fetch(apiUrl + path, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; Cloudflare-Worker/1.0)',
           'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `Bearer ${apiKey}` // 添加授权头部
+           'Authorization': `Bearer ${apiKey}` // 添加授权头
         }
       });
 
