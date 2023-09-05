@@ -15,12 +15,6 @@ const html = `
   <html>
   <head>
     <title>文件列表</title>
-    <style>
-      pre {
-        white-space: pre-wrap;
-        font-family: monospace;
-      }
-    </style>
   </head>
   <body>
     <h1>文件列表</h1>
@@ -41,37 +35,28 @@ fs.writeFile('index.html', html, (err) => {
 });
 
 // 处理文件请求
-addEventListener('fetch', (event) => {
-  const request = event.request;
-  const url = new URL(request.url);
+const handleFile = (file) => {
+  return (request, response) => {
+    const filePath = path.join(rootDirectory, file);
+    const data = fs.readFileSync(filePath, 'utf-8');
 
-  if (url.pathname !== '/' && files.includes(url.pathname.slice(1))) {
-    event.respondWith(handleFile(request));
-  } else {
-    event.respondWith(handleDirectoryListing());
-  }
+    response.setHeader('Content-Type', 'text/plain');
+    response.end(data);
+  };
+};
+
+// 注册路由
+const express = require('express');
+const app = express();
+
+app.get('/', (request, response) => {
+  response.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// 处理文件请求
-async function handleFile(request) {
-  const filePath = path.join(rootDirectory, request.url.slice(1));
-  const data = await fs.promises.readFile(filePath, 'utf-8');
+files.forEach((file) => {
+  app.get(`/${file}`, handleFile(file));
+});
 
-  return new Response(data, {
-    headers: {
-      'Content-Type': 'text/plain',
-    },
-  });
-}
-
-// 处理目录列表请求
-async function handleDirectoryListing() {
-  const indexHtmlPath = path.join(rootDirectory, 'index.html');
-  const data = await fs.promises.readFile(indexHtmlPath, 'utf-8');
-
-  return new Response(data, {
-    headers: {
-      'Content-Type': 'text/html',
-    },
-  });
-}
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
