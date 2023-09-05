@@ -19,9 +19,10 @@
 
   <script>
     const apiUrl = 'https://api.github.com/repos/wangchunin/SHELL/contents';
-    const apiKey = process.env.API_KEY; // 从环境变量中获取 API Key
 
     async function fetchDirectory(path) {
+      const apiKey = await getPageEnvironmentVariable('API_KEY'); // 从页面环境变量中获取 API Key
+
       const response = await fetch(apiUrl + path, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; Cloudflare-Worker/1.0)',
@@ -102,6 +103,12 @@
       const parts = path.split('/');
       parts.pop();
       return parts.join('/');
+    }
+
+    async function getPageEnvironmentVariable(variableName) {
+      const response = await fetch('/__/env/' + variableName);
+      const data = await response.json();
+      return data[variableName];
     }
 
     showDirectory('/');
