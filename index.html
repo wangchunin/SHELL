@@ -90,8 +90,13 @@
 
     async function showDirectory(path) {
       try {
-        const data = await fetchDirectory(path);
-        generateDirectoryPage(data, path);
+        if (path === '/') {
+          const data = await fetchDirectory('');
+          generateDirectoryPage(data, path);
+        } else {
+          const data = await fetchDirectory(path);
+          generateDirectoryPage(data, path);
+        }
       } catch (error) {
         console.error(error);
       }
