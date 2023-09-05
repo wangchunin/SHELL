@@ -1,4 +1,4 @@
-<!-- index.html -->
+// index.html
 
 <!DOCTYPE html>
 <html>
@@ -46,6 +46,20 @@
 
       const ul = document.createElement('ul');
       container.appendChild(ul);
+
+      // 添加返回上一级目录的链接
+      if (path !== '/') {
+        const parentLink = document.createElement('a');
+        parentLink.textContent = '↵ Parent Directory';
+        parentLink.href = path.substring(0, path.lastIndexOf('/'));
+        parentLink.addEventListener('click', async (event) => {
+          event.preventDefault();
+          await showDirectory(parentLink.href);
+        });
+        const parentLi = document.createElement('li');
+        parentLi.appendChild(parentLink);
+        ul.appendChild(parentLi);
+      }
 
       data.forEach(item => {
         const li = document.createElement('li');
