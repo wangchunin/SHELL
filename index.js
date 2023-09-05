@@ -1,13 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const express = require('express');
 
+const app = express();
 const rootDirectory = __dirname; // 根目录路径
 
-// 生成文件列表
-const files = fs.readdirSync(rootDirectory).filter((file) => {
-  const filePath = path.join(rootDirectory, file);
-  return fs.statSync(filePath).isFile();
-});
+// 读取根目录下的文件列表
+const files = fs.readdirSync(rootDirectory);
 
 // 生成目录列表的 HTML
 const html = `
@@ -15,6 +14,15 @@ const html = `
   <html>
   <head>
     <title>文件列表</title>
+    <style>
+      ul {
+        list-style-type: none;
+      }
+      li::before {
+        content: "📄";
+        margin-right: 0.5em;
+      }
+    </style>
   </head>
   <body>
     <h1>文件列表</h1>
@@ -46,9 +54,6 @@ const handleFile = (file) => {
 };
 
 // 注册路由
-const express = require('express');
-const app = express();
-
 app.get('/', (request, response) => {
   response.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -57,6 +62,8 @@ files.forEach((file) => {
   app.get(`/${file}`, handleFile(file));
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+// 启动服务器
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
