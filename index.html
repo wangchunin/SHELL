@@ -48,17 +48,17 @@
       container.appendChild(ul);
 
       if (path !== '/') {
-        const parentLink = document.createElement('a');
-        parentLink.textContent = '↵ Parent Directory';
-        parentLink.href = '#';
-        parentLink.addEventListener('click', async (event) => {
+        const li = document.createElement('li');
+        ul.appendChild(li);
+
+        const link = document.createElement('a');
+        link.textContent = 'Go Back';
+        link.href = '..';
+        link.addEventListener('click', async (event) => {
           event.preventDefault();
-          const parentPath = path.substring(0, path.lastIndexOf('/'));
-          await showDirectory(parentPath);
+          await showDirectory(path.substring(0, path.lastIndexOf('/')));
         });
-        const parentLi = document.createElement('li');
-        parentLi.appendChild(parentLink);
-        ul.appendChild(parentLi);
+        li.appendChild(link);
       }
 
       data.forEach(item => {
@@ -72,7 +72,7 @@
         if (isDirectory) {
           const link = document.createElement('a');
           link.textContent = itemName;
-          link.href = '#';
+          link.href = itemPath;
           link.addEventListener('click', async (event) => {
             event.preventDefault();
             await showDirectory(itemPath);
