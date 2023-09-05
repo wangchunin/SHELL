@@ -1,0 +1,2 @@
+[site]
+headers = { "Content-Type" = "text/plain" }
