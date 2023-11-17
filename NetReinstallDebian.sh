@@ -213,6 +213,8 @@ dns='8.8.8.8 1.1.1.1'
 hostname='Debian'
 network_console=false
 set_debian_version 11
+cloud_kernel=true
+bpo_kernel=false
 mirror_protocol=http
 mirror_host=deb.debian.org
 mirror_directory=/debian
@@ -231,8 +233,6 @@ force_gpt=true
 efi=
 filesystem=ext4
 kernel=
-cloud_kernel=false
-bpo_kernel=false
 install_recommends=true
 install='ca-certificates apt-transport-https libpam-systemd iptables vim wget curl telnet lsof iperf3 dnsutils conntrack wireguard nmap'
 upgrade=
@@ -244,7 +244,7 @@ architecture=
 boot_directory=
 firmware=false
 force_efi_extra_removable=true
-grub_timeout=5
+grub_timeout=3
 dry_run=false
 
 while [ $# -gt 0 ]; do
@@ -700,6 +700,8 @@ d-i partman-partitioning/confirm_write_new_label boolean true
 d-i partman/choose_partition select finish
 d-i partman/confirm boolean true
 d-i partman/confirm_nooverwrite boolean true
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-md/device_remove_md boolean true
 EOF
 }
 
