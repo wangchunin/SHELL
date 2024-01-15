@@ -1,0 +1,11 @@
+ip link set dev tun1 down
+ip link set dev tun2 down
+ip link set dev tun1 type bond_slave
+ip link set dev tun2 type bond_slave
+ip link set dev tun1 master bond-lan
+ip link set dev tun2 master bond-lan
+ip r d dev tun1 192.168.123.0/24
+ip r d dev tun2 192.168.123.0/24
+ip link set dev bond-lan up
+ip a a dev bond-lan 192.168.123.1/24
+route -n
